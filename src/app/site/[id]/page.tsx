@@ -90,29 +90,29 @@ export default function SitePage() {
   };
 
   const handleSEPACountries = (gatewayIndex: number, checked: boolean) => {
-    if (!site) return;
+    setSite(prevSite => {
+      if (!prevSite) return prevSite;
 
-    const currentGateway = site.paymentGateways[gatewayIndex];
-    const currentCountries = new Set(currentGateway.allowed_countries);
+      const currentGateway = prevSite.paymentGateways[gatewayIndex];
+      const currentCountries = new Set(currentGateway.allowed_countries);
 
-    if (checked) {
-      // Add SEPA countries
-      SEPA_COUNTRIES.forEach(country => currentCountries.add(country));
-    } else {
-      // Remove SEPA countries
-      SEPA_COUNTRIES.forEach(country => currentCountries.delete(country));
-    }
+      if (checked) {
+        SEPA_COUNTRIES.forEach(country => currentCountries.add(country));
+      } else {
+        SEPA_COUNTRIES.forEach(country => currentCountries.delete(country));
+      }
 
-    setSite({
-      ...site,
-      paymentGateways: site.paymentGateways.map((gateway, index) =>
-        index === gatewayIndex
-          ? {
-              ...gateway,
-              allowed_countries: Array.from(currentCountries)
-            }
-          : gateway
-      )
+      return {
+        ...prevSite,
+        paymentGateways: prevSite.paymentGateways.map((gateway, index) =>
+          index === gatewayIndex
+            ? {
+                ...gateway,
+                allowed_countries: Array.from(currentCountries)
+              }
+            : gateway
+        )
+      };
     });
   };
 
