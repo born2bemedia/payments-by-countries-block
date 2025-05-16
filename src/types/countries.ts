@@ -8,9 +8,40 @@ export interface Country {
 export const SEPA_COUNTRIES = [
   'AT', // Austria
   'BE', // Belgium
-  'DE', // Germany
-  'ES', // Spain
+  'BG', // Bulgaria
+  'HR', // Croatia
+  'CY', // Cyprus
+  'CZ', // Czech Republic
+  'DK', // Denmark
+  'EE', // Estonia
+  'FI', // Finland
   'FR', // France
+  'DE', // Germany
+  'GR', // Greece
+  'HU', // Hungary
+  'IS', // Iceland
+  'IE', // Ireland
+  'IT', // Italy
+  'LV', // Latvia
+  'LI', // Liechtenstein
+  'LT', // Lithuania
+  'LU', // Luxembourg
+  'MT', // Malta
+  'MC', // Monaco
+  'NL', // Netherlands
+  'NO', // Norway
+  'PL', // Poland
+  'PT', // Portugal
+  'RO', // Romania
+  'SM', // San Marino
+  'SK', // Slovakia
+  'SI', // Slovenia
+  'ES', // Spain
+  'SE', // Sweden
+  'CH', // Switzerland
+  'GB', // United Kingdom
+  'AD', // Andorra
+  'VA', // Vatican City
 ];
 
 export const countries: Country[] = [

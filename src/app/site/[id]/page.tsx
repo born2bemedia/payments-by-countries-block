@@ -30,6 +30,18 @@ export default function SitePage() {
     const fetchSite = async () => {
       try {
         const response = await axios.get(`/api/sites/${params.id}`);
+        console.log('Received site data:', JSON.stringify(response.data, null, 2));
+        console.log('Number of payment gateways:', response.data.paymentGateways?.length || 0);
+        
+        // Log each gateway
+        response.data.paymentGateways?.forEach((gateway: PaymentGateway, index: number) => {
+          console.log(`Gateway ${index + 1}:`, {
+            id: gateway.id,
+            name: gateway.name,
+            allowed_countries_count: gateway.allowed_countries?.length || 0
+          });
+        });
+
         setSite(response.data);
       } catch (error) {
         console.error('Error fetching site:', error);

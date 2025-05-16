@@ -1,4 +1,5 @@
 export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
 
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
@@ -41,10 +42,20 @@ export async function GET(
         }
       );
 
-      console.log('WordPress API response:', response.data);
+      console.log('WordPress API response:', JSON.stringify(response.data, null, 2));
+      console.log('Number of payment gateways received:', Array.isArray(response.data) ? response.data.length : 0);
 
       // WordPress returns an array directly
       const paymentGateways = Array.isArray(response.data) ? response.data : [];
+      
+      // Log each gateway for debugging
+      paymentGateways.forEach((gateway, index) => {
+        console.log(`Gateway ${index + 1}:`, {
+          id: gateway.id,
+          name: gateway.name,
+          allowed_countries_count: gateway.allowed_countries?.length || 0
+        });
+      });
 
       return NextResponse.json({
         ...site,
