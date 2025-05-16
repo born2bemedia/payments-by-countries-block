@@ -1,0 +1,76 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-gray-50;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors;
+  }
+  
+  .btn-secondary {
+    @apply bg-gray-200 text-gray-800 px-4 py-2 rounded-md hover:bg-gray-300 transition-colors;
+  }
+
+  .input {
+    @apply w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent;
+  }
+
+  .card {
+    @apply bg-white p-6 rounded-lg shadow-sm;
+  }
+}
+
+/* React Select Custom Styles */
+.select__control {
+  @apply border border-gray-300 rounded-md shadow-sm !important;
+}
+
+.select__control--is-focused {
+  @apply border-blue-500 ring-2 ring-blue-500 ring-opacity-50 !important;
+}
+
+.select__menu {
+  @apply bg-white border border-gray-300 rounded-md shadow-lg mt-1 !important;
+}
+
+.select__option {
+  @apply px-4 py-2 cursor-pointer hover:bg-blue-50 !important;
+}
+
+.select__option--is-focused {
+  @apply bg-blue-50 !important;
+}
+
+.select__option--is-selected {
+  @apply bg-blue-100 text-blue-900 !important;
+}
+
+.select__multi-value {
+  @apply bg-blue-100 rounded-md !important;
+}
+
+.select__multi-value__label {
+  @apply text-blue-900 px-2 py-1 !important;
+}
+
+.select__multi-value__remove {
+  @apply text-blue-900 hover:bg-blue-200 rounded-r-md px-1 !important;
+}
+
+.select__indicator-separator {
+  @apply bg-gray-300 !important;
+}
+
+.select__dropdown-indicator {
+  @apply text-gray-500 hover:text-gray-700 !important;
+}
+
+.select__clear-indicator {
+  @apply text-gray-500 hover:text-gray-700 !important;
+} 
