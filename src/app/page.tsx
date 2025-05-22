@@ -134,9 +134,9 @@ export default function Home() {
           </button>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
           {/* Add New Site Form */}
-          <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
+          <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-200 sticky top-1">
             <h2 className="text-2xl font-semibold text-gray-900 mb-6">Add New Site</h2>
             <form action={addSite} className="space-y-6">
               <div>
