@@ -114,7 +114,7 @@ export async function PUT(
       // Transform data to match WordPress plugin format
       // WordPress expects a simple object where keys are gateway IDs and values are arrays of allowed countries
       const updateData = paymentGateways.reduce((acc: Record<string, string[]>, gateway: PaymentGateway) => {
-        acc[gateway.id] = gateway.allowed_countries;
+        acc[gateway.id] = gateway.allowed_countries.length === 0 ? ['all'] : gateway.allowed_countries;
         return acc;
       }, {});
 

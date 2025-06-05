@@ -187,9 +187,11 @@ export default function SitePage() {
 
               <Select<Country, true>
                 isMulti
-                value={countries.filter((country: Country) =>
-                  gateway.allowed_countries.includes(country.value)
-                )}
+                value={gateway.allowed_countries.includes('all') 
+                  ? [] 
+                  : countries.filter((country: Country) =>
+                      gateway.allowed_countries.includes(country.value)
+                    )}
                 onChange={(selected) => handleCountryChange(index, selected as Country[])}
                 options={countries}
                 className="mb-4"
