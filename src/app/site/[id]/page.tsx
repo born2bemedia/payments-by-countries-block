@@ -4,8 +4,9 @@ import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 import axios from 'axios';
-import Select from 'react-select';
-import { countries, Country, SEPA_COUNTRIES } from '@/types/countries';
+import { PaymentGatewaysBlock } from '@/components/PaymentGatewaysBlock';
+import { UTMSourceBlock } from '@/components/UTMSourceBlock';
+import { FingerprintDeviceBlock } from '@/components/FingerprintDeviceBlock';
 
 interface PaymentGateway {
   id: string;
@@ -25,23 +26,12 @@ export default function SitePage() {
   const router = useRouter();
   const [site, setSite] = useState<Site | null>(null);
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState<'payment-gateways' | 'utm-source' | 'fingerprint-device'>('payment-gateways');
 
   useEffect(() => {
     const fetchSite = async () => {
       try {
         const response = await axios.get(`/api/sites/${params.id}`);
-        console.log('Received site data:', JSON.stringify(response.data, null, 2));
-        console.log('Number of payment gateways:', response.data.paymentGateways?.length || 0);
-        
-        // Log each gateway
-        response.data.paymentGateways?.forEach((gateway: PaymentGateway, index: number) => {
-          console.log(`Gateway ${index + 1}:`, {
-            id: gateway.id,
-            name: gateway.name,
-            allowed_countries_count: gateway.allowed_countries?.length || 0
-          });
-        });
-
         setSite(response.data);
       } catch (error) {
         console.error('Error fetching site:', error);
@@ -53,68 +43,6 @@ export default function SitePage() {
 
     fetchSite();
   }, [params.id]);
-
-  const updatePaymentGateways = async () => {
-    if (!site) return;
-
-    try {
-      const response = await axios.put(`/api/sites/${site.id}`, {
-        paymentGateways: site.paymentGateways
-      });
-
-      if (response.data) {
-        toast.success('Payment gateways updated successfully');
-      } else {
-        throw new Error('Failed to update payment gateways');
-      }
-    } catch (error) {
-      console.error('Error updating payment gateways:', error);
-      toast.error('Failed to update payment gateways');
-    }
-  };
-
-  const handleCountryChange = (gatewayIndex: number, selectedOptions: Country[]) => {
-    if (!site) return;
-
-    setSite({
-      ...site,
-      paymentGateways: site.paymentGateways.map((gateway, index) =>
-        index === gatewayIndex
-          ? {
-              ...gateway,
-              allowed_countries: selectedOptions.map(option => option.value)
-            }
-          : gateway
-      )
-    });
-  };
-
-  const handleSEPACountries = (gatewayIndex: number, checked: boolean) => {
-    setSite(prevSite => {
-      if (!prevSite) return prevSite;
-
-      const currentGateway = prevSite.paymentGateways[gatewayIndex];
-      const currentCountries = new Set(currentGateway.allowed_countries);
-
-      if (checked) {
-        SEPA_COUNTRIES.forEach(country => currentCountries.add(country));
-      } else {
-        SEPA_COUNTRIES.forEach(country => currentCountries.delete(country));
-      }
-
-      return {
-        ...prevSite,
-        paymentGateways: prevSite.paymentGateways.map((gateway, index) =>
-          index === gatewayIndex
-            ? {
-                ...gateway,
-                allowed_countries: Array.from(currentCountries)
-              }
-            : gateway
-        )
-      };
-    });
-  };
 
   if (loading) {
     return (
@@ -134,10 +62,10 @@ export default function SitePage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="flex justify-between items-center mb-8">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="flex sm:flex-row flex-col-reverse gap-4 justify-between items-start sm:items-center mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">Payment Gateways</h1>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">Site Configuration</h1>
             <p className="text-lg text-gray-600">{site.url}</p>
           </div>
           <button
@@ -161,78 +89,57 @@ export default function SitePage() {
           </button>
         </div>
 
-        <div className="space-y-6">
-          {site.paymentGateways.map((gateway, index) => (
-            <div
-              key={gateway.id}
-              className="bg-white rounded-lg shadow-sm p-6 border border-gray-200"
+        {/* Tab Navigation */}
+        <div className="border-b border-gray-200 mb-8">
+          <nav className="-mb-px flex space-x-8">
+            <button
+              onClick={() => setActiveTab('payment-gateways')}
+              className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                activeTab === 'payment-gateways'
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
             >
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">{gateway.name}</h2>
-              
-              <div className="mb-4">
-                <label className="flex items-center space-x-2">
-                  <input
-                    type="checkbox"
-                    className="form-checkbox h-5 w-5 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
-                    checked={SEPA_COUNTRIES.every(country => 
-                      gateway.allowed_countries.includes(country)
-                    )}
-                    onChange={(e) => handleSEPACountries(index, e.target.checked)}
-                  />
-                  <span className="text-sm font-medium text-gray-700">
-                    Include SEPA Countries
-                  </span>
-                </label>
-              </div>
-
-              <Select<Country, true>
-                isMulti
-                value={gateway.allowed_countries.includes('all') 
-                  ? [] 
-                  : countries.filter((country: Country) =>
-                      gateway.allowed_countries.includes(country.value)
-                    )}
-                onChange={(selected) => handleCountryChange(index, selected as Country[])}
-                options={countries}
-                className="mb-4"
-                placeholder="Select allowed countries..."
-                classNamePrefix="select"
-                styles={{
-                  control: (base) => ({
-                    ...base,
-                    borderColor: '#e5e7eb',
-                    '&:hover': {
-                      borderColor: '#93c5fd'
-                    }
-                  }),
-                  multiValue: (base) => ({
-                    ...base,
-                    backgroundColor: '#e0f2fe'
-                  }),
-                  multiValueLabel: (base) => ({
-                    ...base,
-                    color: '#0369a1'
-                  }),
-                  multiValueRemove: (base) => ({
-                    ...base,
-                    color: '#0369a1',
-                    '&:hover': {
-                      backgroundColor: '#bae6fd',
-                      color: '#0369a1'
-                    }
-                  })
-                }}
-              />
-            </div>
-          ))}
-
-          <button
-            onClick={updatePaymentGateways}
-            className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200"
-          >
-            Save Changes
-          </button>
+              Payment Gateways Blocks
+            </button>
+            <button
+              onClick={() => setActiveTab('utm-source')}
+              className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                activeTab === 'utm-source'
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+              style={{
+                display: 'none',
+              }}
+            >
+              UTM Source Blocks
+            </button>
+            <button
+              onClick={() => setActiveTab('fingerprint-device')}
+              className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                activeTab === 'fingerprint-device'
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              Fingerprint Device Blocks
+            </button>
+          </nav>
         </div>
+
+        {/* Tab Content */}
+        {activeTab === 'payment-gateways' && (
+          <PaymentGatewaysBlock site={site} setSite={setSite} />
+        )}
+        
+        {activeTab === 'utm-source' && (
+          <UTMSourceBlock site={site} />
+        )}
+        
+        {activeTab === 'fingerprint-device' && (
+          <FingerprintDeviceBlock site={site} />
+        )}
       </div>
     </div>
   );
