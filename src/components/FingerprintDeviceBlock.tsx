@@ -155,8 +155,8 @@ export function FingerprintDeviceBlock({ site }: FingerprintDeviceBlockProps) {
   };
 
   const saveFingerprintDevices = async () => {
-    if (fingerprintDevices.some((device) => !device.device_id.trim())) {
-      toast.error("Please fill in all device IDs");
+    if (fingerprintDevices.some((device) => !device.device_id.trim() || !device.utm.trim())) {
+      toast.error("Please fill in all device IDs and UTM");
       return;
     }
 
@@ -317,6 +317,7 @@ export function FingerprintDeviceBlock({ site }: FingerprintDeviceBlockProps) {
                           e.target.value
                         )
                       }
+                      required
                       placeholder="Enter device ID..."
                       className="w-full px-3 py-1.5 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                     />
@@ -336,6 +337,7 @@ export function FingerprintDeviceBlock({ site }: FingerprintDeviceBlockProps) {
                           e.target.value
                         )
                       }
+                      required
                       placeholder="Enter UTM..."
                       className="w-full px-3 py-1.5 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                     />
