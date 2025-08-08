@@ -5,17 +5,20 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import toast from 'react-hot-toast';
 import axios from 'axios';
+import { FingerprintDeviceBlocksAll } from '@/components/FingerprintDeviceBlocksAll';  
 
 interface Site {
   id: string;
   url: string;
   apiKey: string;
+  paymentGateways: any[];
 }
 
 export default function Home() {
   const router = useRouter();
   const [sites, setSites] = useState<Site[]>([]);
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState<'gateways' | 'fingerprints'>('gateways');
 
   useEffect(() => {
     // Check authentication
@@ -134,94 +137,129 @@ export default function Home() {
           </button>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
-          {/* Add New Site Form */}
-          <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-200 relative sm:sticky top-1">
-            <h2 className="text-2xl font-semibold text-gray-900 mb-6">Add New Site</h2>
-            <form action={addSite} className="space-y-6">
-              <div>
-                <label htmlFor="url" className="block text-sm font-medium text-gray-700 mb-2">
-                  WordPress Site URL
-                </label>
-                <div className="relative rounded-md shadow-sm">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <span className="text-gray-500 sm:text-sm">https://</span>
+        {/* Tabs */}
+        <div className="mb-8">
+          <div className="border-b border-gray-200">
+            <nav className="-mb-px flex space-x-8">
+              <button
+                onClick={() => setActiveTab('gateways')}
+                className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                  activeTab === 'gateways'
+                    ? 'border-blue-500 text-blue-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                Payment Gateways Manager
+              </button>
+              <button
+                onClick={() => setActiveTab('fingerprints')}
+                className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                  activeTab === 'fingerprints'
+                    ? 'border-blue-500 text-blue-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                Fingerprint Device Blocks
+              </button>
+            </nav>
+          </div>
+        </div>
+
+        {/* Tab Content */}
+        {activeTab === 'gateways' && (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+            {/* Add New Site Form */}
+            <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-200 relative sm:sticky top-1">
+              <h2 className="text-2xl font-semibold text-gray-900 mb-6">Add New Site</h2>
+              <form action={addSite} className="space-y-6">
+                <div>
+                  <label htmlFor="url" className="block text-sm font-medium text-gray-700 mb-2">
+                    WordPress Site URL
+                  </label>
+                  <div className="relative rounded-md shadow-sm">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <span className="text-gray-500 sm:text-sm">https://</span>
+                    </div>
+                    <input
+                      type="text"
+                      id="url"
+                      name="url"
+                      placeholder="example.com"
+                      className="block w-full pl-16 pr-3 py-3 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                      required
+                    />
                   </div>
+                </div>
+                <div>
+                  <label htmlFor="apiKey" className="block text-sm font-medium text-gray-700 mb-2">
+                    API Key
+                  </label>
                   <input
-                    type="text"
-                    id="url"
-                    name="url"
-                    placeholder="example.com"
-                    className="block w-full pl-16 pr-3 py-3 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                    type="password"
+                    id="apiKey"
+                    name="apiKey"
+                    placeholder="Enter your API key"
+                    className="block w-full px-3 py-3 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                     required
                   />
                 </div>
-              </div>
-              <div>
-                <label htmlFor="apiKey" className="block text-sm font-medium text-gray-700 mb-2">
-                  API Key
-                </label>
-                <input
-                  type="password"
-                  id="apiKey"
-                  name="apiKey"
-                  placeholder="Enter your API key"
-                  className="block w-full px-3 py-3 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                  required
-                />
-              </div>
-              <button
-                type="submit"
-                className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200"
-              >
-                Add Site
-              </button>
-            </form>
-          </div>
-
-          {/* Sites List */}
-          <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
-            <h2 className="text-2xl font-semibold text-gray-900 mb-6">Your Sites</h2>
-            {sites.length === 0 ? (
-              <div className="text-center py-12">
-                <svg
-                  className="mx-auto h-12 w-12 text-gray-400"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
+                <button
+                  type="submit"
+                  className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200"
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
-                  />
-                </svg>
-                <h3 className="mt-2 text-sm font-medium text-gray-900">No sites added</h3>
-                <p className="mt-1 text-sm text-gray-500">Get started by adding your first WordPress site.</p>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {sites.map(site => (
-                  <div
-                    key={site.id}
-                    className="flex sm:flex-row flex-col gap-4 items-start sm:items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200 hover:border-blue-500 transition-colors duration-200"
+                  Add Site
+                </button>
+              </form>
+            </div>
+
+            {/* Sites List */}
+            <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
+              <h2 className="text-2xl font-semibold text-gray-900 mb-6">Your Sites</h2>
+              {sites.length === 0 ? (
+                <div className="text-center py-12">
+                  <svg
+                    className="mx-auto h-12 w-12 text-gray-400"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
                   >
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-gray-900 truncate">{site.url}</p>
-                    </div>
-                    <Link
-                      href={`/site/${site.id}`}
-                      className="sm:ml-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-blue-700 bg-blue-100 hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200"
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
+                    />
+                  </svg>
+                  <h3 className="mt-2 text-sm font-medium text-gray-900">No sites added</h3>
+                  <p className="mt-1 text-sm text-gray-500">Get started by adding your first WordPress site.</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {sites.map(site => (
+                    <div
+                      key={site.id}
+                      className="flex sm:flex-row flex-col gap-4 items-start sm:items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200 hover:border-blue-500 transition-colors duration-200"
                     >
-                      Manage Gateways
-                    </Link>
-                  </div>
-                ))}
-              </div>
-            )}
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-gray-900 truncate">{site.url}</p>
+                      </div>
+                      <Link
+                        href={`/site/${site.id}`}
+                        className="sm:ml-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-blue-700 bg-blue-100 hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200"
+                      >
+                        Manage Gateways
+                      </Link>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
-        </div>
+        )}
+
+        {activeTab === 'fingerprints' && (
+          <FingerprintDeviceBlocksAll sites={sites} />
+        )}
       </div>
     </div>
   );
