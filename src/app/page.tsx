@@ -100,6 +100,25 @@ export default function Home() {
     router.replace('/login');
   };
 
+  const deleteSite = async (siteId: string, siteUrl: string) => {
+    const confirmed = window.confirm(
+      `Are you sure you want to delete the site "${siteUrl}"?\n\nThis action cannot be undone.`
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    try {
+      await axios.delete(`/api/sites/${siteId}`);
+      setSites(prev => prev.filter(site => site.id !== siteId));
+      toast.success('Site deleted successfully');
+    } catch (error: any) {
+      console.error('Error deleting site:', error);
+      toast.error(error.response?.data?.error || 'Failed to delete site');
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gray-50">
@@ -243,12 +262,33 @@ export default function Home() {
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium text-gray-900 truncate">{site.url}</p>
                       </div>
-                      <Link
-                        href={`/site/${site.id}`}
-                        className="sm:ml-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-blue-700 bg-blue-100 hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200"
-                      >
-                        Manage Gateways
-                      </Link>
+                      <div className="flex items-center gap-2">
+                        <Link
+                          href={`/site/${site.id}`}
+                          className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-blue-700 bg-blue-100 hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200"
+                        >
+                          Manage Gateways
+                        </Link>
+                        <button
+                          onClick={() => deleteSite(site.id, site.url)}
+                          className="inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-red-700 bg-red-100 hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors duration-200"
+                          title="Delete site"
+                        >
+                          <svg
+                            className="h-4 w-4"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                            />
+                          </svg>
+                        </button>
+                      </div>
                     </div>
                   ))}
                 </div>

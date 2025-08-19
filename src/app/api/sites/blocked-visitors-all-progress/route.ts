@@ -35,110 +35,114 @@ export async function POST(request: Request) {
       JSON.stringify(wordpressData, null, 2)
     );
 
-    // Collect all new device IDs from all sites
-    const allNewDeviceIds = new Set<string>();
-    const allNewData: Array<{ utm: string; deviceId: string; newDevice: boolean }> = [];
+             // Collect all new device IDs from all sites
+         const allNewDeviceIds = new Set<string>();
+         const allNewData: Array<{ utm: string; deviceId: string; newDevice: boolean }> = [];
 
-    // Create a readable stream for SSE
-    const stream = new ReadableStream({
-      async start(controller) {
-        // Send initial progress
-        controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'start', totalSites: sites.length })}\n\n`));
+         // Create a readable stream for SSE
+         const stream = new ReadableStream({
+           async start(controller) {
+             // Send initial progress
+             controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'start', totalSites: sites.length })}\n\n`));
 
-        // Process each site and update it immediately
-        const updateResults = [];
-        for (let i = 0; i < sites.length; i++) {
-          const site = sites[i];
-          try {
-            // Send progress update
-            controller.enqueue(encoder.encode(`data: ${JSON.stringify({ 
-              type: 'progress', 
-              siteId: site.id, 
-              siteUrl: site.url, 
-              status: 'processing',
-              current: i + 1,
-              total: sites.length
-            })}\n\n`));
+             // First pass: collect all existing device IDs from all sites
+             const allExistingDeviceIds = new Set<string>();
+             for (const site of sites) {
+               try {
+                 const existingResponse = await axios.get(
+                   `${site.url}/wp-json/pagw/v1/blocked-visitors`,
+                   {
+                     headers: {
+                       "Content-Type": "application/json",
+                       "X-API-Key": site.apiKey,
+                     },
+                   }
+                 );
 
-            // Get existing data from this site
-            const existingResponse = await axios.get(
-              `${site.url}/wp-json/pagw/v1/blocked-visitors`,
-              {
-                headers: {
-                  "Content-Type": "application/json",
-                  "X-API-Key": site.apiKey,
-                },
-              }
-            );
+                 const existingData = existingResponse.data || [];
+                 existingData.forEach((visitor: any) => {
+                   allExistingDeviceIds.add(visitor.deviceId);
+                 });
+               } catch (error: any) {
+                 console.error(`Error fetching existing data from ${site.url}:`, error.message);
+               }
+             }
 
-            const existingData = existingResponse.data || [];
-            const existingDeviceIds = existingData.map(
-              (visitor: any) => visitor.deviceId
-            );
+             // Find truly new device IDs (not existing on ANY site)
+             const newDeviceIds = wordpressData.filter(
+               (visitor: any) => !allExistingDeviceIds.has(visitor.deviceId)
+             );
 
-            // Find new data for this site
-            const newData = wordpressData.filter(
-              (visitor: any) => !existingDeviceIds.includes(visitor.deviceId)
-            );
+             // Prepare data for external endpoint (only new devices)
+             newDeviceIds.forEach((visitor: any) => {
+               allNewData.push({
+                 utm: visitor.affiliate_utm,
+                 deviceId: visitor.deviceId,
+                 newDevice: true,
+               });
+             });
 
-            // Add to global collections
-            newData.forEach((visitor: any) => {
-              if (!allNewDeviceIds.has(visitor.deviceId)) {
-                allNewDeviceIds.add(visitor.deviceId);
-                allNewData.push({
-                  utm: visitor.affiliate_utm,
-                  deviceId: visitor.deviceId,
-                  newDevice: true,
-                });
-              }
-            });
+             console.log(`Found ${allNewData.length} truly new device IDs out of ${wordpressData.length} total`);
 
-            console.log(`Site ${site.url}: Found ${newData.length} new device IDs`);
+             // Process each site and update it immediately
+             const updateResults = [];
+             for (let i = 0; i < sites.length; i++) {
+               const site = sites[i];
+               try {
+                 // Send progress update
+                 controller.enqueue(encoder.encode(`data: ${JSON.stringify({ 
+                   type: 'progress', 
+                   siteId: site.id, 
+                   siteUrl: site.url, 
+                   status: 'processing',
+                   current: i + 1,
+                   total: sites.length
+                 })}\n\n`));
 
-            // Update this site immediately
-            const updateResponse = await axios.post(
-              `${site.url}/wp-json/pagw/v1/blocked-visitors`,
-              wordpressData,
-              {
-                headers: {
-                  "Content-Type": "application/json",
-                  "X-API-Key": site.apiKey,
-                },
-              }
-            );
+                 // Update this site immediately
+                 const updateResponse = await axios.post(
+                   `${site.url}/wp-json/pagw/v1/blocked-visitors`,
+                   wordpressData,
+                   {
+                     headers: {
+                       "Content-Type": "application/json",
+                       "X-API-Key": site.apiKey,
+                     },
+                   }
+                 );
 
-            if (!updateResponse.data.success) {
-              throw new Error(`Failed to update ${site.url}`);
-            }
+                 if (!updateResponse.data.success) {
+                   throw new Error(`Failed to update ${site.url}`);
+                 }
 
-            updateResults.push({ site: site.url, success: true });
+                 updateResults.push({ site: site.url, success: true });
 
-            // Send success update
-            controller.enqueue(encoder.encode(`data: ${JSON.stringify({ 
-              type: 'progress', 
-              siteId: site.id, 
-              siteUrl: site.url, 
-              status: 'saved',
-              current: i + 1,
-              total: sites.length
-            })}\n\n`));
+                 // Send success update
+                 controller.enqueue(encoder.encode(`data: ${JSON.stringify({ 
+                   type: 'progress', 
+                   siteId: site.id, 
+                   siteUrl: site.url, 
+                   status: 'saved',
+                   current: i + 1,
+                   total: sites.length
+                 })}\n\n`));
 
-          } catch (error: any) {
-            console.error(`Error processing site ${site.url}:`, error.message);
-            updateResults.push({ site: site.url, success: false, error: error.message });
+               } catch (error: any) {
+                 console.error(`Error processing site ${site.url}:`, error.message);
+                 updateResults.push({ site: site.url, success: false, error: error.message });
 
-            // Send error update
-            controller.enqueue(encoder.encode(`data: ${JSON.stringify({ 
-              type: 'progress', 
-              siteId: site.id, 
-              siteUrl: site.url, 
-              status: 'error',
-              error: error.message,
-              current: i + 1,
-              total: sites.length
-            })}\n\n`));
-          }
-        }
+                 // Send error update
+                 controller.enqueue(encoder.encode(`data: ${JSON.stringify({ 
+                   type: 'progress', 
+                   siteId: site.id, 
+                   siteUrl: site.url, 
+                   status: 'error',
+                   error: error.message,
+                   current: i + 1,
+                   total: sites.length
+                 })}\n\n`));
+               }
+             }
 
         // Send only one request to external endpoint with all new data
         if (allNewData.length > 0) {
@@ -147,6 +151,8 @@ export async function POST(request: Request) {
             "External endpoint data (all new):",
             JSON.stringify(allNewData, null, 2)
           );
+
+          console.log("allNewData", allNewData);
 
           try {
             const externalResponse = await axios.post(

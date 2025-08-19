@@ -1,8 +1,8 @@
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
-import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { NextRequest, NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
 import axios from 'axios';
 
 interface PaymentGateway {
@@ -12,73 +12,55 @@ interface PaymentGateway {
 }
 
 export async function GET(
-  request: Request,
+  request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
     const site = await prisma.site.findUnique({
-      where: {
-        id: params.id
-      }
+      where: { id: params.id },
     });
 
     if (!site) {
-      return NextResponse.json(
-        { error: 'Site not found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "Site not found" }, { status: 404 });
     }
 
-    try {
-      // Fetch payment gateways from WordPress site
-      console.log(`Fetching payment gateways from ${site.url}/wp-json/pagw/v1/payment-gateways`);
-      const response = await axios.get(
-        `${site.url}/wp-json/pagw/v1/payment-gateways`,
-        {
-          headers: {
-            'Content-Type': 'application/json',
-            'X-API-Key': site.apiKey
-          }
-        }
-      );
-
-      console.log('WordPress API response:', JSON.stringify(response.data, null, 2));
-      console.log('Number of payment gateways received:', Array.isArray(response.data) ? response.data.length : 0);
-
-      // WordPress returns an array directly
-      const paymentGateways = Array.isArray(response.data) ? response.data : [];
-      
-      // Log each gateway for debugging
-      paymentGateways.forEach((gateway, index) => {
-        console.log(`Gateway ${index + 1}:`, {
-          id: gateway.id,
-          name: gateway.name,
-          allowed_countries_count: gateway.allowed_countries?.length || 0
-        });
-      });
-
-      return NextResponse.json({
-        ...site,
-        paymentGateways
-      });
-    } catch (wordpressError: any) {
-      console.error('WordPress API error:', {
-        message: wordpressError.message,
-        response: wordpressError.response?.data,
-        status: wordpressError.response?.status
-      });
-
-      // Return site data even if WordPress API fails
-      return NextResponse.json({
-        ...site,
-        paymentGateways: [],
-        error: 'Failed to fetch payment gateways from WordPress site'
-      });
-    }
+    return NextResponse.json(site);
   } catch (error) {
-    console.error('Error fetching site:', error);
+    console.error("Error fetching site:", error);
     return NextResponse.json(
-      { error: 'Failed to fetch site data' },
+      { error: "Failed to fetch site" },
+      { status: 500 }
+    );
+  }
+}
+
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const site = await prisma.site.findUnique({
+      where: { id: params.id },
+    });
+
+    if (!site) {
+      return NextResponse.json({ error: "Site not found" }, { status: 404 });
+    }
+
+    // Delete the site
+    await prisma.site.delete({
+      where: { id: params.id },
+    });
+
+    return NextResponse.json({
+      success: true,
+      message: "Site deleted successfully",
+      deletedSite: site,
+    });
+  } catch (error) {
+    console.error("Error deleting site:", error);
+    return NextResponse.json(
+      { error: "Failed to delete site" },
       { status: 500 }
     );
   }
