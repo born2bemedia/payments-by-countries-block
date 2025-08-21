@@ -18,7 +18,8 @@ interface Site {
   id: string;
   url: string;
   apiKey: string;
-  paymentGateways: PaymentGateway[];
+  paymentGateways?: PaymentGateway[];
+  error?: string;
 }
 
 export default function SitePage() {
@@ -33,6 +34,7 @@ export default function SitePage() {
       try {
         const response = await axios.get(`/api/sites/${params.id}`);
         setSite(response.data);
+        console.log(response.data);
       } catch (error) {
         console.error('Error fetching site:', error);
         toast.error('Failed to load site data');

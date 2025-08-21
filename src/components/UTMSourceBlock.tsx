@@ -10,7 +10,8 @@ interface Site {
   id: string;
   url: string;
   apiKey: string;
-  paymentGateways: any[];
+  paymentGateways?: any[];
+  error?: string;
 }
 
 interface UTMSource {

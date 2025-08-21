@@ -24,7 +24,92 @@ export async function GET(
       return NextResponse.json({ error: "Site not found" }, { status: 404 });
     }
 
-    return NextResponse.json(site);
+    try {
+      // Test if WordPress API is accessible
+      console.log(`Testing WordPress API accessibility...`);
+      try {
+        const testResponse = await axios.get(`${site.url}/wp-json/`);
+        console.log('WordPress REST API is accessible:', testResponse.status);
+      } catch (testError: any) {
+        console.error('WordPress REST API test failed:', testError.message);
+      }
+
+      // Test if WooCommerce is available
+      console.log(`Testing WooCommerce availability...`);
+      try {
+        const wcResponse = await axios.get(`${site.url}/wp-json/wc/v3/`);
+        console.log('WooCommerce REST API is accessible:', wcResponse.status);
+      } catch (wcError: any) {
+        console.error('WooCommerce REST API test failed:', wcError.message);
+      }
+
+      // Test without API key first
+      console.log(`Testing payment gateways endpoint without API key...`);
+      try {
+        const noKeyResponse = await axios.get(`${site.url}/wp-json/pagw/v1/payment-gateways`);
+        console.log('Response without API key:', noKeyResponse.status, noKeyResponse.data);
+      } catch (noKeyError: any) {
+        console.log('Expected error without API key:', noKeyError.response?.status, noKeyError.response?.data);
+      }
+
+      // Fetch payment gateways from WordPress site
+      console.log(`Fetching payment gateways from ${site.url}/wp-json/pagw/v1/payment-gateways`);
+      console.log(`Using API Key: ${site.apiKey.substring(0, 8)}...`);
+      
+      const response = await axios.get(
+        `${site.url}/wp-json/pagw/v1/payment-gateways`,
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            'X-API-Key': site.apiKey
+          }
+        }
+      );
+
+      console.log('WordPress API response status:', response.status);
+      console.log('WordPress API response headers:', response.headers);
+      console.log('WordPress API response data:', JSON.stringify(response.data, null, 2));
+      console.log('Response data type:', typeof response.data);
+      console.log('Is array:', Array.isArray(response.data));
+      console.log('Number of payment gateways received:', Array.isArray(response.data) ? response.data.length : 0);
+
+      // WordPress returns an array directly
+      const paymentGateways = Array.isArray(response.data) ? response.data : [];
+      
+      // Log each gateway for debugging
+      paymentGateways.forEach((gateway, index) => {
+        console.log(`Gateway ${index + 1}:`, {
+          id: gateway.id,
+          name: gateway.name,
+          allowed_countries_count: gateway.allowed_countries?.length || 0
+        });
+      });
+
+      return NextResponse.json({
+        ...site,
+        paymentGateways
+      });
+    } catch (wordpressError: any) {
+      console.error('WordPress API error:', {
+        message: wordpressError.message,
+        response: wordpressError.response?.data,
+        status: wordpressError.response?.status,
+        headers: wordpressError.response?.headers
+      });
+
+      // Check if it's a WordPress error response
+      if (wordpressError.response?.data?.code) {
+        console.error('WordPress error code:', wordpressError.response.data.code);
+        console.error('WordPress error message:', wordpressError.response.data.message);
+      }
+
+      // Return site data even if WordPress API fails
+      return NextResponse.json({
+        ...site,
+        paymentGateways: [],
+        error: `Failed to fetch payment gateways from WordPress site: ${wordpressError.response?.data?.message || wordpressError.message}`
+      });
+    }
   } catch (error) {
     console.error("Error fetching site:", error);
     return NextResponse.json(
