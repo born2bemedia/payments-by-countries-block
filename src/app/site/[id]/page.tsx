@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 import axios from 'axios';
 import { PaymentGatewaysBlock } from '@/components/PaymentGatewaysBlock';
+import { PaymentGatewaysCurrencyBlock } from '@/components/PaymentGatewaysCurrencyBlock';
 import { UTMSourceBlock } from '@/components/UTMSourceBlock';
 import { FingerprintDeviceBlock } from '@/components/FingerprintDeviceBlock';
 
@@ -27,7 +28,7 @@ export default function SitePage() {
   const router = useRouter();
   const [site, setSite] = useState<Site | null>(null);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'payment-gateways' | 'utm-source' | 'fingerprint-device'>('payment-gateways');
+  const [activeTab, setActiveTab] = useState<'payment-gateways' | 'payment-gateways-currency' | 'utm-source' | 'fingerprint-device'>('payment-gateways');
 
   useEffect(() => {
     const fetchSite = async () => {
@@ -102,7 +103,17 @@ export default function SitePage() {
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
               }`}
             >
-              Payment Gateways Blocks
+              Block by Country
+            </button>
+            <button
+              onClick={() => setActiveTab('payment-gateways-currency')}
+              className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                activeTab === 'payment-gateways-currency'
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              Block by Currency
             </button>
             <button
               onClick={() => setActiveTab('utm-source')}
@@ -136,6 +147,9 @@ export default function SitePage() {
         {/* Tab Content */}
         {activeTab === 'payment-gateways' && (
           <PaymentGatewaysBlock site={site} setSite={setSite} />
+        )}
+        {activeTab === 'payment-gateways-currency' && (
+          <PaymentGatewaysCurrencyBlock site={site} />
         )}
         
         {activeTab === 'utm-source' && (
