@@ -6,6 +6,7 @@ import toast from 'react-hot-toast';
 import axios from 'axios';
 import { PaymentGatewaysBlock } from '@/components/PaymentGatewaysBlock';
 import { PaymentGatewaysCurrencyBlock } from '@/components/PaymentGatewaysCurrencyBlock';
+import { PaymentGatewaysUTMBlock } from '@/components/PaymentGatewaysUTMBlock';
 import { UTMSourceBlock } from '@/components/UTMSourceBlock';
 import { FingerprintDeviceBlock } from '@/components/FingerprintDeviceBlock';
 
@@ -28,7 +29,7 @@ export default function SitePage() {
   const router = useRouter();
   const [site, setSite] = useState<Site | null>(null);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'payment-gateways' | 'payment-gateways-currency' | 'utm-source' | 'fingerprint-device'>('payment-gateways');
+  const [activeTab, setActiveTab] = useState<'payment-gateways' | 'payment-gateways-currency' | 'payment-gateways-utm' | 'utm-source' | 'fingerprint-device'>('payment-gateways');
 
   useEffect(() => {
     const fetchSite = async () => {
@@ -116,6 +117,16 @@ export default function SitePage() {
               Block by Currency
             </button>
             <button
+              onClick={() => setActiveTab('payment-gateways-utm')}
+              className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                activeTab === 'payment-gateways-utm'
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              Block by UTM
+            </button>
+            <button
               onClick={() => setActiveTab('utm-source')}
               className={`py-2 px-1 border-b-2 font-medium text-sm ${
                 activeTab === 'utm-source'
@@ -150,6 +161,10 @@ export default function SitePage() {
         )}
         {activeTab === 'payment-gateways-currency' && (
           <PaymentGatewaysCurrencyBlock site={site} />
+        )}
+        
+        {activeTab === 'payment-gateways-utm' && (
+          <PaymentGatewaysUTMBlock site={site} />
         )}
         
         {activeTab === 'utm-source' && (
