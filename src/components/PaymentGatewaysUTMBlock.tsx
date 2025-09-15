@@ -155,18 +155,18 @@ export function PaymentGatewaysUTMBlock({ site }: PaymentGatewaysUTMBlockProps) 
         
         return (
           <div key={gw.id} className="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-semibold text-gray-900">{gw.name}</h2>
-              <div className="flex items-center gap-2">
+            <div className="flex items-center justify-between mb-4 flex-col md:flex-row gap-4 md:gap-2">
+              <h2 className="text-xl font-semibold text-gray-900 text-left md:text-left w-full md:w-auto">{gw.name}</h2>
+              <div className="flex items-center gap-2 w-full md:w-auto">
                 <button
                   onClick={() => setAll(gw.id)}
-                  className="text-xs px-3 py-1 rounded-md bg-gray-100 hover:bg-gray-200 text-gray-700"
+                  className="text-xs px-3 py-1 rounded-md bg-gray-100 hover:bg-gray-200 text-gray-700 w-1/2 md:w-auto"
                 >
                   Allow All UTM
                 </button>
                 <button
                   onClick={() => addUTMSource(gw.id)}
-                  className="text-xs px-3 py-1 rounded-md bg-blue-100 hover:bg-blue-200 text-blue-700"
+                  className="text-xs px-3 py-1 rounded-md bg-blue-100 hover:bg-blue-200 text-blue-700 w-1/2 md:w-auto"
                 >
                   Add UTM Source
                 </button>

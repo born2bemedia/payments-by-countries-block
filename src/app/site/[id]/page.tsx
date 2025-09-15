@@ -1,14 +1,15 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { useParams, useRouter } from 'next/navigation';
-import toast from 'react-hot-toast';
-import axios from 'axios';
-import { PaymentGatewaysBlock } from '@/components/PaymentGatewaysBlock';
-import { PaymentGatewaysCurrencyBlock } from '@/components/PaymentGatewaysCurrencyBlock';
-import { PaymentGatewaysUTMBlock } from '@/components/PaymentGatewaysUTMBlock';
-import { UTMSourceBlock } from '@/components/UTMSourceBlock';
-import { FingerprintDeviceBlock } from '@/components/FingerprintDeviceBlock';
+import { useState, useEffect } from "react";
+import { useParams, useRouter } from "next/navigation";
+import toast from "react-hot-toast";
+import axios from "axios";
+import { PaymentGatewaysBlock } from "@/components/PaymentGatewaysBlock";
+import { PaymentGatewaysCurrencyBlock } from "@/components/PaymentGatewaysCurrencyBlock";
+import { PaymentGatewaysUTMBlock } from "@/components/PaymentGatewaysUTMBlock";
+import { AllPaymentsBlockByCountry } from "@/components/AllPaymentsBlockByCountry";
+import { UTMSourceBlock } from "@/components/UTMSourceBlock";
+import { FingerprintDeviceBlock } from "@/components/FingerprintDeviceBlock";
 
 interface PaymentGateway {
   id: string;
@@ -29,7 +30,14 @@ export default function SitePage() {
   const router = useRouter();
   const [site, setSite] = useState<Site | null>(null);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'payment-gateways' | 'payment-gateways-currency' | 'payment-gateways-utm' | 'utm-source' | 'fingerprint-device'>('payment-gateways');
+  const [activeTab, setActiveTab] = useState<
+    | "payment-gateways"
+    | "payment-gateways-currency"
+    | "payment-gateways-utm"
+    | "all-payments-block"
+    | "utm-source"
+    | "fingerprint-device"
+  >("payment-gateways");
 
   useEffect(() => {
     const fetchSite = async () => {
@@ -38,8 +46,8 @@ export default function SitePage() {
         setSite(response.data);
         console.log(response.data);
       } catch (error) {
-        console.error('Error fetching site:', error);
-        toast.error('Failed to load site data');
+        console.error("Error fetching site:", error);
+        toast.error("Failed to load site data");
       } finally {
         setLoading(false);
       }
@@ -69,11 +77,13 @@ export default function SitePage() {
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="flex sm:flex-row flex-col-reverse gap-4 justify-between items-start sm:items-center mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">Site Configuration</h1>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">
+              Website Management
+            </h1>
             <p className="text-lg text-gray-600">{site.url}</p>
           </div>
           <button
-            onClick={() => router.push('/')}
+            onClick={() => router.push("/")}
             className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200"
           >
             <svg
@@ -89,65 +99,75 @@ export default function SitePage() {
                 d="M10 19l-7-7m0 0l7-7m-7 7h18"
               />
             </svg>
-            Back to Sites
+            Back to Dashboard
           </button>
         </div>
 
         {/* Tab Navigation */}
         <div className="border-b border-gray-200 mb-8">
-          <nav className="-mb-px flex space-x-8">
+          <nav className="-mb-px flex md:flex-row flex-col">
             <button
-              onClick={() => setActiveTab('payment-gateways')}
-              className={`py-2 px-1 border-b-2 font-medium text-sm ${
-                activeTab === 'payment-gateways'
-                  ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              onClick={() => setActiveTab("payment-gateways")}
+              className={`grow py-2 px-1 border-b-2 font-medium text-sm ${
+                activeTab === "payment-gateways"
+                  ? "border-blue-500 text-blue-600"
+                  : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
               }`}
             >
-              Block by Country
+              Single Payment Block by Country
             </button>
             <button
-              onClick={() => setActiveTab('payment-gateways-currency')}
-              className={`py-2 px-1 border-b-2 font-medium text-sm ${
-                activeTab === 'payment-gateways-currency'
-                  ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              onClick={() => setActiveTab("payment-gateways-currency")}
+              className={`grow py-2 px-1 border-b-2 font-medium text-sm ${
+                activeTab === "payment-gateways-currency"
+                  ? "border-blue-500 text-blue-600"
+                  : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
               }`}
             >
-              Block by Currency
+              Single Payment Block by Currency
             </button>
             <button
-              onClick={() => setActiveTab('payment-gateways-utm')}
-              className={`py-2 px-1 border-b-2 font-medium text-sm ${
-                activeTab === 'payment-gateways-utm'
-                  ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              onClick={() => setActiveTab("payment-gateways-utm")}
+              className={`grow py-2 px-1 border-b-2 font-medium text-sm ${
+                activeTab === "payment-gateways-utm"
+                  ? "border-blue-500 text-blue-600"
+                  : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
               }`}
             >
-              Block by UTM
+              Single Payment Block by UTM
             </button>
             <button
-              onClick={() => setActiveTab('utm-source')}
-              className={`py-2 px-1 border-b-2 font-medium text-sm ${
-                activeTab === 'utm-source'
-                  ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              onClick={() => setActiveTab("all-payments-block")}
+              className={`grow py-2 px-1 border-b-2 font-medium text-sm ${
+                activeTab === "all-payments-block"
+                  ? "border-blue-500 text-blue-600"
+                  : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+              }`}
+            >
+              All Payments Block by Country
+            </button>
+            <button
+              onClick={() => setActiveTab("utm-source")}
+              className={`grow py-2 px-1 border-b-2 font-medium text-sm ${
+                activeTab === "utm-source"
+                  ? "border-blue-500 text-blue-600"
+                  : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
               }`}
               style={{
-                display: 'none',
+                display: "none",
               }}
             >
               UTM Source Blocks
             </button>
             <button
-              onClick={() => setActiveTab('fingerprint-device')}
-              className={`py-2 px-1 border-b-2 font-medium text-sm ${
-                activeTab === 'fingerprint-device'
-                  ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              onClick={() => setActiveTab("fingerprint-device")}
+              className={`grow py-2 px-1 border-b-2 font-medium text-sm ${
+                activeTab === "fingerprint-device"
+                  ? "border-blue-500 text-blue-600"
+                  : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
               }`}
               style={{
-                display: 'none',
+                display: "none",
               }}
             >
               Fingerprint Device Blocks
@@ -156,25 +176,27 @@ export default function SitePage() {
         </div>
 
         {/* Tab Content */}
-        {activeTab === 'payment-gateways' && (
+        {activeTab === "payment-gateways" && (
           <PaymentGatewaysBlock site={site} setSite={setSite} />
         )}
-        {activeTab === 'payment-gateways-currency' && (
+        {activeTab === "payment-gateways-currency" && (
           <PaymentGatewaysCurrencyBlock site={site} />
         )}
-        
-        {activeTab === 'payment-gateways-utm' && (
+
+        {activeTab === "payment-gateways-utm" && (
           <PaymentGatewaysUTMBlock site={site} />
         )}
-        
-        {activeTab === 'utm-source' && (
-          <UTMSourceBlock site={site} />
+
+        {activeTab === "all-payments-block" && (
+          <AllPaymentsBlockByCountry site={site} />
         )}
-        
-        {activeTab === 'fingerprint-device' && (
+
+        {activeTab === "utm-source" && <UTMSourceBlock site={site} />}
+
+        {activeTab === "fingerprint-device" && (
           <FingerprintDeviceBlock site={site} />
         )}
       </div>
     </div>
   );
-} 
+}
