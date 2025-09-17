@@ -144,7 +144,7 @@ export default function SitePage() {
                   : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
               }`}
             >
-              All Payments Block by Country
+              Blocked countries for checkout
             </button>
             <button
               onClick={() => setActiveTab("utm-source")}
