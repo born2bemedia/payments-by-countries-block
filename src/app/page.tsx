@@ -367,7 +367,7 @@ export default function Home() {
                               }}
                             />
                           ) : isLoadingOG ? (
-                            <div className="w-full h-full bg-gray-200 animate-pulse flex items-center justify-center h-[166px]">
+                            <div className="w-full bg-gray-200 animate-pulse flex items-center justify-center h-[166px]">
                               <div className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
                             </div>
                           ) : (
