@@ -349,6 +349,7 @@ export default function Home() {
                   {filteredSites.map(site => {
                     const siteOGData = ogData[site.id];
                     const isLoadingOG = loadingOG[site.id];
+                    const siteTitle = site.url.split('//')[1];
 
                     return (
                       <div
@@ -383,12 +384,13 @@ export default function Home() {
                         <div className="p-4">
                           {/* Site Title */}
                           <h3 className="text-sm font-medium text-gray-900 truncate mb-1">
-                            {siteOGData?.title || siteOGData?.siteName || site.url}
+                            {/*siteOGData?.title || siteOGData?.siteName || site.url}*/}
+                            {siteTitle}
                           </h3>
                           
                           {/* Site URL */}
                           <p className="text-xs text-gray-500 truncate mb-2">
-                            {site.url}
+                            {/*site.url}*/}
                           </p>
                           
                           {/* Description */}
