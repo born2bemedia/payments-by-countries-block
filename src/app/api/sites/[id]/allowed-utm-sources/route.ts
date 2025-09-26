@@ -4,10 +4,11 @@ import axios from 'axios';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+    const { id } = await params;
   try {
-    const siteId = params.id;
+    const { id: siteId } = await params;
 
     // Get site from database
     const site = await prisma.site.findUnique({
@@ -54,10 +55,11 @@ export async function GET(
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+    const { id } = await params;
   try {
-    const siteId = params.id;
+    const { id: siteId } = await params;
     const body = await request.json();
 
     // Get site from database

@@ -3,10 +3,10 @@ import axios from 'axios';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const siteId = params.id;
+    const { id: siteId } = await params;
     
     // Get site from database
     const { prisma } = await import('@/lib/prisma');

@@ -7,12 +7,13 @@ import axios from 'axios';
 
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+    const { id } = await params;
   try {
     const site = await prisma.site.findUnique({
       where: {
-        id: params.id
+        id: id
       }
     });
 
@@ -60,15 +61,16 @@ export async function GET(
 
 export async function POST(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+    const { id } = await params;
   try {
     const body = await request.json();
     console.log('Received UTM sources update:', JSON.stringify(body, null, 2));
 
     const site = await prisma.site.findUnique({
       where: {
-        id: params.id
+        id: id
       }
     });
 

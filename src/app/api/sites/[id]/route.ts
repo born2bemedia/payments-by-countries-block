@@ -13,11 +13,12 @@ interface PaymentGateway {
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const site = await prisma.site.findUnique({
-      where: { id: params.id },
+      where: { id },
     });
 
     if (!site) {
@@ -121,11 +122,12 @@ export async function GET(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const site = await prisma.site.findUnique({
-      where: { id: params.id },
+      where: { id },
     });
 
     if (!site) {
@@ -134,7 +136,7 @@ export async function DELETE(
 
     // Delete the site
     await prisma.site.delete({
-      where: { id: params.id },
+      where: { id },
     });
 
     return NextResponse.json({
@@ -153,17 +155,18 @@ export async function DELETE(
 
 export async function PUT(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const body = await request.json();
     const { paymentGateways } = body;
+    const { id } = await params;
 
     console.log('Received payment gateways update:', JSON.stringify(paymentGateways, null, 2));
 
     const site = await prisma.site.findUnique({
       where: {
-        id: params.id
+        id
       }
     });
 
